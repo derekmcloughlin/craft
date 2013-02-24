@@ -267,4 +267,200 @@ recurMul x y
 
 intSqrRoot :: Integer -> Integer
 
-intSqrRoot n = 3
+-- primitive recursive definition
+intSqrRoot n = intSqrRootHelper n n
+           where
+           intSqrRootHelper n m 
+                | m == 1                                         = 1
+                | m > 1 && (m - 1) * (m - 1) <= n && m * m < n   = m
+                | otherwise                                      = intSqrRootHelper n (m - 1)
+
+-- Exercise 4.21
+
+f :: Integer -> Integer
+
+f 0  = 0
+f 1  = 44
+f 2  = 17
+f 3  = 17
+f 4  = 55
+f 6  = 17
+f 7  = 19
+f _  = 0
+
+maxf :: (Integer -> Integer) -> Integer -> Integer
+maxf f n
+     | n > 0    = max (f n) (maxf f (n - 1))
+     | n == 0   = f 0
+
+-- Exercise 4.22
+
+f2 :: Integer -> Integer
+
+f2 0 = 1
+f2 1 = 1
+f2 2 = 2
+f2 3 = 0
+f2 4 = 4
+f2 5 = 3
+f2 _ = 5
+
+isZeroF :: (Integer -> Integer) -> Integer -> Bool
+
+isZeroF f n
+        | n > 0         = (f n) == 0 || isZeroF f (n - 1)
+        | n == 0        = (f 0) == 0
+
+
+-- Exercise 4.23
+
+-- Original regions code
+
+regions :: Integer -> Integer
+regions n
+        | n == 0        = 1
+        | n > 0         = regions (n - 1) + n
+
+-- Original sumFun code
+
+sumFun :: (Integer -> Integer) -> Integer -> Integer
+sumFun f n
+       | n == 0         = f 0
+       | n > 0          = sumFun f (n - 1) + f n
+
+
+regions' :: Integer -> Integer
+
+regions' n = sumFun (+ 0) n + 1
+
+-- Test that they're the same
+-- [(a, regions a, regions' a) | a <- [1..10]]
+
+-- Exercise 4.24
+
+-- Max no of pices for a solid block
+
+----------------
+-- For the next exercises 
+empty = ["",
+         "",
+         "",
+         "",
+         "",
+         ""]
+
+-- Exercise 4.25
+
+blackSquares :: Integer -> Picture
+
+blackSquares n = nSquares black n
+
+whiteSquares :: Integer -> Picture
+
+whiteSquares n = nSquares white n
+
+nSquares :: Picture -> Integer -> Picture
+nSquares p n
+    | n == 0    = empty
+    | n <= 1    = p
+    | otherwise = p `beside` nSquares p (n - 1)
+
+blackWhite :: Integer -> Picture
+blackWhite n
+    | n <= 1    = black
+    | otherwise = black `beside` whiteBlack (n - 1)
+
+whiteBlack :: Integer -> Picture
+
+whiteBlack n
+    | n <= 1    = white
+    | otherwise = white `beside` blackWhite (n - 1)
+
+blackChess :: Integer -> Integer -> Picture
+
+blackChess n m
+    | n <=1     = blackWhite m
+    | otherwise = blackWhite m `above` whiteChess (n - 1) m
+
+whiteChess :: Integer -> Integer -> Picture
+whiteChess n m
+    | n <=1     = whiteBlack m
+    | otherwise = whiteBlack m `above` blackChess (n - 1) m
+
+-- Exercise 4.26
+
+column :: Picture -> Integer -> Picture
+
+column p n
+    | n <= 1    = p
+    | otherwise = p `above` column p (n - 1)
+
+-- Exercise 4.27
+
+diagonal_LR :: Integer -> Picture
+
+diagonal_LR n = diagonalHelper n n
+    where
+    diagonalHelper n m
+        | m == 0   = empty
+        | m >= 1   = ((whiteSquares (n - m)) `beside`
+                           black `beside`
+                           whiteSquares (m - 1))
+                           `above` diagonalHelper n (m - 1)
+
+-- Exercise 4.28
+
+diagonal_RL :: Integer -> Picture
+
+diagonal_RL n = diagonalHelper n n
+    where
+    diagonalHelper n m
+        | m == 0   = empty
+        | m >= 1   = ((whiteSquares (m - 1)) `beside`
+                           black `beside`
+                           whiteSquares (n - m))
+                           `above` diagonalHelper n (m - 1)
+
+
+-- Exercise 4.29
+
+crossDiagonal :: Integer -> Picture
+
+crossDiagonal n = superimpose (diagonal_LR n) (diagonal_RL n)
+
+        
+-- Exercise 4.30
+
+whiteBlackCol :: Integer -> Picture
+whiteBlackCol n
+    | n <= 1    = white
+    | otherwise = white `above` blackWhiteCol (n - 1)
+
+blackWhiteCol :: Integer -> Picture
+blackWhiteCol n
+    | n <= 1    = black
+    | otherwise = black `above` whiteBlackCol (n - 1)
+
+chessBoard :: Integer -> Picture
+
+chessBoard n
+    | n == 1    = black
+    | n >= 1    = chessBoard (n - 1) `beside` rightRow `above` bottomRow
+    where
+    rightRow
+        | odd n       = blackWhiteCol (n - 1)
+        | otherwise   = whiteBlackCol (n - 1)
+    bottomRow
+        | odd n       = blackWhite n
+        | otherwise   = whiteBlack n
+
+-- Exercise 4.31
+-- Exercise 4.32
+-- Exercise 4.33
+-- Exercise 4.34
+-- Exercise 4.35
+-- Exercise 4.36
+-- Exercise 4.37
+-- Exercise 4.38
+-- Exercise 4.39
+

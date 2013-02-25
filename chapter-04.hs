@@ -1,6 +1,7 @@
 -- Exercise 4.1
 import Pictures
 import Test.QuickCheck
+import Test.HUnit
 
 maxThree :: Integer -> Integer -> Integer -> Integer
 maxThree x y z = max (max x y ) z
@@ -455,12 +456,117 @@ chessBoard n
         | otherwise   = whiteBlack n
 
 -- Exercise 4.31
+
+-- Euclid's algorithm
+highestCF :: Integer -> Integer -> Integer
+highestCF n m
+    | m == 0  = n
+    | m >=1   = highestCF m (n `rem` m)
+
 -- Exercise 4.32
+
+twoToTheN :: Integer -> Integer
+twoToTheN  n
+    | n == 0    = 1
+    | n == 1    = 2
+    | even n    = twoToTheN (n `div` 2) * twoToTheN (n `div` 2)
+    | otherwise = twoToTheN (n `div` 2) * twoToTheN (n `div` 2) * 2
+
 -- Exercise 4.33
+
+
+allEqual :: Integer -> Integer -> Integer -> Bool
+allEqual x y z
+         | x == y && y == z     = True
+         | otherwise            = False
+
+testAllEqual1 = TestCase (assertEqual "for: allEqual 1 1 1" True  (allEqual 1 1 1 ))
+testAllEqual2 = TestCase (assertEqual "for: allEqual 1 2 3" False (allEqual 1 2 3 ))
+testAllEqual3 = TestCase (assertEqual "for: allEqual 1 1 3" False (allEqual 1 1 3 ))
+testAllEqual4 = TestCase (assertEqual "for: allEqual 1 2 2" False (allEqual 1 2 2 ))
+testAllEqual5 = TestCase (assertEqual "for: allEqual 1 2 1" False (allEqual 1 2 1 ))
+
+testsAllEqual = TestList [testAllEqual1, testAllEqual2,
+                          testAllEqual3, testAllEqual4, testAllEqual5]
+
+
 -- Exercise 4.34
+
+solution :: Integer -> Integer -> Integer -> Bool
+solution x y z  = ((x + y + z) == (3 * z))
+
+testSolution1 = TestCase (assertEqual "for: solution 1 1 1" True  (solution 1 1 1 ))
+testSolution2 = TestCase (assertEqual "for: solution 1 2 3" False (solution 1 2 3 ))
+testSolution3 = TestCase (assertEqual "for: solution 1 1 3" False (solution 1 1 3 ))
+testSolution4 = TestCase (assertEqual "for: solution 1 2 2" False (solution 1 2 2 ))
+testSolution5 = TestCase (assertEqual "for: solution 1 2 1" False (solution 1 2 1 ))
+
+testsSolution = TestList [testSolution1, testSolution2,
+                          testSolution3, testSolution4, testSolution5]
 -- Exercise 4.35
+
+allDifferent :: Integer -> Integer -> Integer -> Bool
+allDifferent x y z
+         | x /= y && y /= z && x /= z    = True
+         | otherwise                     = False
+
+testAllDifferent1 = TestCase (assertEqual "for: allDifferent 1 2 3" True  (allDifferent 1 2 3 ))
+testAllDifferent2 = TestCase (assertEqual "for: allDifferent 1 1 1" False (allDifferent 1 1 1 ))
+testAllDifferent3 = TestCase (assertEqual "for: allDifferent 1 1 3" False (allDifferent 1 1 3 ))
+testAllDifferent4 = TestCase (assertEqual "for: allDifferent 1 2 2" False (allDifferent 1 2 2 ))
+testAllDifferent5 = TestCase (assertEqual "for: allDifferent 1 2 1" False (allDifferent 1 2 1 ))
+
+testsAllDifferent = TestList [testAllDifferent1, testAllDifferent2,
+                              testAllDifferent3, testAllDifferent4, testAllDifferent5]
 -- Exercise 4.36
+
+attempt :: Integer -> Integer -> Integer -> Bool
+attempt m n p = ( m /= n) && (n /= p)
+
+testattempt1 = TestCase (assertEqual "for: attempt 1 2 3" True  (attempt 1 2 3 ))
+testattempt2 = TestCase (assertEqual "for: attempt 1 1 1" False (attempt 1 1 1 ))
+testattempt3 = TestCase (assertEqual "for: attempt 1 1 3" False (attempt 1 1 3 ))
+testattempt4 = TestCase (assertEqual "for: attempt 1 2 2" False (attempt 1 2 2 ))
+testattempt5 = TestCase (assertEqual "for: attempt 1 2 1" False (attempt 1 2 1 ))
+
+testsattempt = TestList [testattempt1, testattempt2,
+                         testattempt3, testattempt4, testattempt5]
+
+-- As expected the last test fails
+
 -- Exercise 4.37
+
+averageThree :: Integer -> Integer -> Integer -> Float
+averageThree x y z = ( fromInteger x + fromInteger y + fromInteger z) / 3.0
+
+howManyAboveAverage :: Integer -> Integer -> Integer -> Integer
+
+howManyAboveAverage x y z = (if (fromInteger x > averageThree x y z) then 1 else 0)
+                          + (if (fromInteger y > averageThree x y z) then 1 else 0)
+                          + (if (fromInteger z > averageThree x y z) then 1 else 0)
+
+testHMAA1 = TestCase (assertEqual "for: HMAA 3 3 3" 0     (howManyAboveAverage 3 3 3 ))
+testHMAA2 = TestCase (assertEqual "for: HMAA 3 4 5" 1     (howManyAboveAverage 3 4 5 ))
+testHMAA3 = TestCase (assertEqual "for: HMAA 3 103 104" 2 (howManyAboveAverage 3 103 104 ))
+testHMAA4 = TestCase (assertEqual "for: HMAA 5 4 3" 1     (howManyAboveAverage 5 4 3 ))
+testHMAA5 = TestCase (assertEqual "for: HMAA 5 3 4" 1     (howManyAboveAverage 5 3 4 ))
+testHMAA6 = TestCase (assertEqual "for: HMAA 3 5 4" 1     (howManyAboveAverage 3 5 4 ))
+
+testsHMAA = TestList [testHMAA1, testHMAA2, testHMAA3, testHMAA4, testHMAA5, testHMAA6]
+
 -- Exercise 4.38
+
+-- Testing twoToTheN 
+
+testTwoToTheN_1 = TestCase (assertEqual "for: twoToTheN 0" 1 (twoToTheN 0))
+testTwoToTheN_2 = TestCase (assertEqual "for: twoToTheN 1" 2 (twoToTheN 1))
+testTwoToTheN_3 = TestCase (assertEqual "for: twoToTheN 2" 4 (twoToTheN 2))
+testTwoToTheN_4 = TestCase (assertEqual "for: twoToTheN 3" 8 (twoToTheN 3))
+
+testsTwoToTheN = TestList [testTwoToTheN_1, testTwoToTheN_2, testTwoToTheN_3, testTwoToTheN_4]
+
 -- Exercise 4.39
+
+-- QuickCheck tests...
+
 

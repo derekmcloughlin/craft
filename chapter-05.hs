@@ -72,16 +72,146 @@ testsRoot = TestList [testRoot1, testRoot2, testRoot3]
 
 -- Exercise 5.5
 
+-- Length of perimeter of a geometrical shape
+
+data Shape = Circle Float |
+             Rectangle Float Float |
+             Triangle Float Float Float
+             deriving(Eq, Ord, Show)
+
+perimeter :: Shape -> Float
+perimeter (Circle r )           = 2 * pi * r
+perimeter (Rectangle x y)       = 2 * (x + y)
+perimeter (Triangle a b c)      = (a + b + c)
+
+{- In GHCI:
+
+   ghci> perimeter (Circle 10)
+   62.831856
+   ghci> perimeter (Rectangle 10 10)
+   40.0
+   ghci> perimeter $ Rectangle 10 10
+   40.0
+-}
+
+
 
 -- Exercise 5.6
 
+data ShopItem = ShopItem String Float
+                deriving (Eq, Show)
+                
+name :: ShopItem -> String
+
+name (ShopItem item_name _) = item_name
+
+price :: ShopItem -> Float
+
+price (ShopItem _ item_price) = item_price
+
+{-
+    ghci> let a = ShopItem "Bananas" 4.35
+    ghci> a
+    ShopItem "Bananas" 4.35
+    ghci> name a
+    "Bananas"
+    ghci> price a
+    4.35
+-}
 
 -- Exercise 5.7
 
+-- Added "Triangle" to constructor of shape in Ex 5.5 because can't redefine Shape here.
+
+isRound :: Shape -> Bool
+isRound (Circle _)        = True
+isRound (Rectangle _ _)   = False
+isRound (Triangle _ _ _)  = False
+
+-- Note: Couldn't do the following:
+-- isRound (_ _)       = False
+
+area :: Shape -> Float
+
+area (Circle r)         = pi * r * r
+area (Rectangle x y)    = x * y
+area (Triangle a b c)   = sqrt (s * (s - a) * (s - b) * (s - c))
+                          where s = (a + b + c ) / 2
 
 -- Exercise 5.8
+
+regular :: Shape -> Bool
+
+regular (Circle _)        = True
+
+regular (Rectangle x y)
+    | x == y              = True
+    | otherwise           = False
+
+regular (Triangle a b c)
+    | a == b && b == c    = True
+    | otherwise           = False
 
 
 -- Exercise 5.9
 
+-- Derived definitions (
+
+data Move = Rock |
+            Paper |
+            Scissors
+            deriving (Show, Eq)
+
+{-
+    In GHCI:
+
+    ghci> let a = Rock
+    ghci> let b = Paper
+    ghci> let c = Scissors
+    ghci> a
+    Rock                -- This is the 'Show' function
+    ghci> a == b        -- This is the 'Eq' function
+    False
+    ghci> let d = Rock
+    ghci> a == d
+    True
+    
+-}
+
+{-
+    For the Shape type (Show, Eq, Ord)
+
+    ghci> let a = Circle 3
+    ghci> let b = Circle 2
+    ghci> a                     -- 'Show'
+    Circle 3.0
+    ghci> a == b                -- 'Eq'
+    False
+    ghci> let c = Circle 2
+    ghci> b == c
+    True
+    ghci> a < b                 -- 'Ord'
+    False
+    ghci> a > b                 
+    True
+    ghci> b > c
+    False
+    ghci> b < c
+    False
+
+    The following compares Circles and Rectangles. Doesn't really make much sense here.
+    Ordering goes by the order of the constructors. This makes sense in enumerated
+    types such at Month = January | February | March | ...
+    
+    ghci> let d = Rectangle 2 3
+    ghci> a < d
+    True
+    ghci> a == d
+    False
+    ghci> d < a
+    False
+    
+-}
+
+-- Exercise 5.10
 

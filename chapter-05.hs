@@ -401,19 +401,114 @@ duplicate xs n
 
 -- Exercise 5.24
 
+pushRight :: String -> Integer -> String
+
+pushRight xs lineLength
+    | n >= lineLength   = xs
+    | otherwise                 = [' ' | n <- [1 .. lineLength - n] ] ++ xs
+    where n = toInteger (length xs)
+
 -- Exercise 5.25
+
+{-
+??
+-}
 
 -- Exercise 5.26
 
+fib :: Integer -> Integer
+fib n
+    | n == 0    = 0
+    | n == 1    = 1
+    | otherwise =  fib (n - 1) + fib (n - 2)
+
+fibTable :: Integer -> String
+
+fibTable n = onSeparateLines $ ["n" ++ pushRight "fib n" 10] ++
+                               [(show i) ++ (pushRight (show (fib i)) 10) | i <- [1..n]]
+
 -- Exercise 5.27
+
+{- boring ... -}
 
 -- Exercise 5.28
 
+type Person = String
+type Book   = String
+
+type Database = [(Person, Book)]
+
+exampleBase :: Database
+exampleBase = [ ("Alice", "Tintin"),
+                ("Anna",  "Little Women"),
+                ("Alice", "Asterix"),
+                ("Rory", "Tintin")]
+
+books :: Database -> Person -> [Book]
+
+books dBase whichPerson = [book | (person, book) <- dBase, person == whichPerson]
+
+borrowers :: Database -> Book -> [Person]
+
+borrowers dBase whichBook = [person | (person, book) <- dBase, book == whichBook]
+
+borrowed :: Database -> Book -> Bool
+
+borrowed dBase whichBook = elem whichBook [book | (_, book) <- dBase]
+
+numBorrowed :: Database -> Person -> Int
+
+numBorrowed dBase whichPerson  = length $ books dBase whichPerson
+
+
+makeLoan :: Database -> Person -> Book -> Database
+
+makeLoan dBase whichPerson whichBook = dBase ++ [(whichPerson, whichBook)]
+
+returnLoan :: Database -> Person -> Book -> Database
+
+returnLoan dBase whichPerson whichBook = [(person, book) |
+                 (person, book) <- dBase, (person, book) /= (whichPerson, whichBook)]
+
 -- Exercise 5.29
+
+{- boring ... -}
 
 -- Exercise 5.30
 
+data Loan = Loan Person Book
+            deriving (Show)
+
+type LoanDB = [Loan]
+
+loanDB :: LoanDB
+loanDB = [ Loan "Alice" "Tintin",
+           Loan "Alice" "Asterix",
+           Loan "Rory"  "Tintin",
+           Loan "Anna"  "Little Women"]
+
+books' :: LoanDB -> Person -> [Book]
+books' db whichPerson = [book | (Loan person book) <- db, person == whichPerson]
+           
+borrowers' :: LoanDB -> Book -> [Person]
+borrowers' db whichBook = [person | (Loan person book) <- db, book == whichBook]
+
+numBorrowed' :: LoanDB -> Person -> Int
+
+numBorrowed' db whichPerson  = length $ books' db whichPerson
+
+makeLoan' :: LoanDB -> Person -> Book -> LoanDB
+
+makeLoan' db whichPerson whichBook = db ++ [Loan whichPerson whichBook]
+
+returnLoan' :: LoanDB -> Person -> Book -> LoanDB
+
+returnLoan' db whichPerson whichBook = [Loan person book |
+                           Loan person book <- db, (person, book) /= (whichPerson, whichBook)]
+
 -- Exercise 5.31
+
+
 
 -- Exercise 5.32
 

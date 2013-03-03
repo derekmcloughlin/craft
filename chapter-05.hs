@@ -494,25 +494,77 @@ borrowers' :: LoanDB -> Book -> [Person]
 borrowers' db whichBook = [person | (Loan person book) <- db, book == whichBook]
 
 numBorrowed' :: LoanDB -> Person -> Int
-
 numBorrowed' db whichPerson  = length $ books' db whichPerson
 
 makeLoan' :: LoanDB -> Person -> Book -> LoanDB
-
 makeLoan' db whichPerson whichBook = db ++ [Loan whichPerson whichBook]
 
 returnLoan' :: LoanDB -> Person -> Book -> LoanDB
-
 returnLoan' db whichPerson whichBook = [Loan person book |
                            Loan person book <- db, (person, book) /= (whichPerson, whichBook)]
 
 -- Exercise 5.31
 
-
+-- TODO tests
 
 -- Exercise 5.32
 
+type DB3  = [(Person, [Book])]
+
+db3 :: DB3
+db3 = [ ("Alice", ["Asterix", "Tintin"]),
+        ("Rory",  ["Tintin"]),
+        ("Anna",  ["Little Women"])]
+
+books3 :: DB3 -> Person -> [Book]
+books3 db whichPerson = concat [books | (person, books) <- db, person == whichPerson]
+
+borrowers3 :: DB3 -> Book -> [Person]
+borrowers3 db whichBook = [person | (person, books) <- db, book <- books, book == whichBook]
+
+numBorrowed3 :: DB3 -> Person -> Int
+numBorrowed3 db whichPerson  = length $ books3 db whichPerson
+
+makeLoan3 :: DB3 -> Person -> Book -> DB3
+{-
+    The following will work but it's not what we really want.
+    It gives us :
+    ghci> makeLoan3 db3 "Alice" "Clojure"
+    [("Alice",["Asterix","Tintin"]),
+     ("Rory",["Tintin"]),
+     ("Anna",["Little Women"]),
+     ("Alice",["Clojure"])]
+     
+    ghci> books3 it "Alice"
+    ["Asterix","Tintin","Clojure"]
+
+   Ideally we'd like the new book to be in with Alice's other books
+-}
+
+makeLoan3 db whichPerson whichBook = db ++ [(whichPerson, [whichBook])]
+
+-- This is how it chould be done. There's probably a better way.
+
+makeLoan3a db whichPerson whichBook = [(person, books) |
+                                    (person, books) <- db, person /= whichPerson] ++ 
+                                    [(whichPerson, [whichBook] ++ (books3 db whichPerson))]
+{-
+    ghci> makeLoan3a db3 "Alice" "Clojure"
+    [("Rory",["Tintin"]),("Anna",["Little Women"]),("Alice",["Clojure","Asterix","Tintin"])]
+-}
+                                    
+returnLoan3 :: DB3 -> Person -> Book -> DB3
+returnLoan3 db whichPerson whichBook =
+            [(person, books) | (person, books) <- db, person /= whichPerson] ++ 
+                [(whichPerson, [book | book <- (books3 db whichPerson), book /= whichBook])]
+
+-- Conclusion: this data structure is really awkward.
+
 -- Exercise 5.33
 
+-- TODO
+
 -- Exercise 5.34
+
+-- TODO
 

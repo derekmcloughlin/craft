@@ -368,11 +368,54 @@ flipVRLE pic = map reverse pic
 flipHRLE :: PictureRLE -> PictureRLE
 flipHRLE pic = reverse pic
 
--- 'above' is straightforward.
+-- 'above' is the same as the non-RLE version
+
+aboveRLE :: PictureRLE -> PictureRLE -> PictureRLE
+aboveRLE = (++)
+
+-- 'beside *can* be the same as the non-RLE version
+-- However it's not optimised - see exercise 6.24
+
+besideRLE :: PictureRLE -> PictureRLE -> PictureRLE
+
+besideRLE = zipWith (++)
 
 -- Exercise 6.24
 
+-- compact the RLE
+type LineRLE = [(Int, Char)]
 
+testLineRLE :: LineRLE
+testLineRLE = [(3, '.'), (4, '#'), (2, '#'), (7, '.')]
+
+stringToRLE :: String -> LineRLE
+stringToRLE s = str_acc [] s
+
+-- TODO: There's probably a better way to write this using an apply function.
+str_acc :: [Char] -> [Char] -> LineRLE
+str_acc chs xs
+    | xs == []              = [(length chs, head chs)] 
+    | chs == []             = str_acc [head xs] (tail xs) 
+    | head xs == head chs   = str_acc (chs ++ [head xs]) (tail xs) 
+    | otherwise             = [(length chs, head chs)] ++ (str_acc [] xs)
+
+rleToString :: LineRLE -> String
+rleToString line = concat [ replicate n ch | (n, ch) <- line]
+
+compactLineRLE :: LineRLE -> LineRLE
+compactLineRLE line = stringToRLE $ rleToString line 
+
+compactPictureRLE :: PictureRLE -> PictureRLE
+compactPictureRLE pic = [compactLineRLE line | line <- pic]
+
+-- TODO: Could use a similar approach in str_acc to compact without
+-- having to go through intermediate string steps
+
+-- This leads us to a compacted 'beside'
+
+besideRLE' :: PictureRLE -> PictureRLE -> PictureRLE
+
+besideRLE' pic1 pic2 = compactPictureRLE $ zipWith (++) pic1 pic2
 
 -- Exercise 6.25
 

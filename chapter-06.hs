@@ -193,31 +193,182 @@ propAboveBeside4 w e =
     
 -- Exercise 6.17
 
+testPic3 :: Picture
+testPic3 = [ "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX",
+             "XXXXXXXXXXXXXX"]
 
+blankPic :: Int -> Int -> Picture
+blankPic w h = replicate h $ replicate w '.'
+
+padPicture :: Picture -> Int -> Int -> Picture
+
+padPicture pic w h
+    | width pic >= w && height pic >= h  = pic
+    | otherwise = pic `beside`  blankPic (w - width pic) (height pic)
+                  `above`
+                  blankPic w1 (h - height pic)
+    where w1 = max w (width pic)
+          h1 = max h (height pic)
+
+beside2 :: Picture -> Picture -> Picture
+
+beside2 pic1 pic2 = (padPicture pic1 w h) `beside` (padPicture pic2 w h)
+    where w = min (width pic1) (width pic2)
+          h = max (height pic1) (height pic2)
+
+above2 :: Picture -> Picture -> Picture
+
+above2 pic1 pic2 = (padPicture pic1 w h) `above` (padPicture pic2 w h)
+    where w = max (width pic1) (width pic2)
+          h = min (height pic1) (height pic2)
 
 -- Exercise 6.18
 
+weirdPic :: Picture
+weirdPic = [ "XXXXX",
+             "YYYYYYYYY",
+             "ZZ",
+             "W",
+             "PPPPP"]
 
+padLine :: String -> Int -> String
+padLine s n
+    | n <= length s      = s
+    | otherwise          = s ++ replicate (n - length s) '.'
+
+maxWidth :: Picture -> Int
+maxWidth pic
+    | pic == []         = 0
+    | otherwise         = max (length $ head pic) (maxWidth $ tail pic)
+
+makeRectangular :: Picture -> Picture
+makeRectangular pic = [ padLine line n | line <- pic]
+                      where n = maxWidth pic
+
+beside3 :: Picture -> Picture -> Picture
+beside3 pic1 pic2 = (makeRectangular pic1) `beside2` (makeRectangular pic2)
+
+above3 :: Picture -> Picture -> Picture
+above3 pic1 pic2 = (makeRectangular pic1) `above2` (makeRectangular pic2)
 
 -- Exercise 6.19
 
+type Picture2 = [[Bool]]
 
+horse2 :: Picture2
 
+horse2 = [[False, False, False, False, False, False, False, True , True , False, False, False],
+          [False, False, False, False, False, True , True , False, False, True , False, False],
+          [False, False, False, True , True , False, False, False, False, False, True , False],
+          [False, False, True , False, False, False, False, False, False, False, True , False],
+          [False, False, True , False, False, False, True , False, False, False, True , False],
+          [False, False, True , False, False, False, True , True , True , False, True , False],
+          [False, True , False, False, False, False, True , False, False, True , True , False],
+          [False, False, True , False, False, False, True , False, False, False, False, False],
+          [False, False, False, True , False, False, False, True , False, False, False, False],
+          [False, False, False, False, True , False, False, True , False, False, False, False],
+          [False, False, False, False, False, True , False, True , False, False, False, False],
+          [False, False, False, False, False, False, True , True , False, False, False, False]]
+
+printChar :: Bool -> Char
+printChar b
+    | b == True = '#'
+    | otherwise = '.'
+
+printLine :: [Bool] -> String
+printLine line = [printChar b | b <- line] ++ "\n"
+
+printPicture2 :: Picture2 -> IO ()
+printPicture2 pic = putStr $ concat [printLine line | line <- pic]
+          
 -- Exercise 6.20
 
+-- Picture as a list of columns
+type PictureCol = [String]
 
+horse3 :: PictureCol
+horse3 = [ "............",
+           ".....#......",
+           "....#.###...",
+           "...#.....#..",
+           "..#......#..",
+           ".#........#.",
+           "#...####..#.",
+           "####..#....#",
+           "......#....#",
+           ".....#....#.",
+           ".....#####..",
+           "............"]
+
+-- This makes it very tricky to do normal operations like print.
+-- Effectively we've pivoted or rotated the horse.
+-- The function 'above' is really like 'beside' and vice versa.
 
 -- Exercise 6.21
 
-
+-- For example: the code here is very similar to rotate90
+printPictureCol :: PictureCol -> IO ()
+printPictureCol pic = putStr $ onSeparateLines $
+                             flipH [ [xs !! i | xs <- pic] | i <- [0 .. length (pic!!0) - 1]]
+                   where onSeparateLines xs = [ch | x <- xs, ch <- x ++ "\n"]
 
 -- Exercise 6.22
 
+type Picture4 = String
+horse4 :: Picture4
 
+horse4 = ".......##...\n.....##..#..\n...##.....#.\n..#.......#.\n..#...#...#.\n..#...###.#.\n.#....#..##.\n..#...#.....\n...#...#....\n....#..#....\n.....#.#....\n......##...."
+
+-- This is easy
+printPicture4 :: Picture4 -> IO ()
+printPicture4 pic = putStr pic
+
+-- Everything else is much harder. Effectively you'd split the strings anyway to
+-- make them easier to deal with.
 
 -- Exercise 6.23
 
+-- RLE
 
+type PictureRLE = [[(Int, Char)]]
+
+horse5 :: PictureRLE
+
+horse5 = [
+           [(7, '.'), (2, '#'), (3, '.')],
+           [(5, '.'), (2, '#'), (2, '.'), (1, '#'), (2, '.')],
+           [(3, '.'), (2, '#'), (5, '.'), (1, '#'), (1, '.')],
+           [(2, '.'), (1, '#'), (7, '.'), (1, '#'), (1, '.')],
+           [(2, '.'), (1, '#'), (3, '.'), (1, '#'), (3, '.'), (1, '#'), (1, '.')],
+           [(2, '.'), (1, '#'), (3, '.'), (3, '#'), (1, '.'), (1, '#'), (1, '.')],
+           [(1, '.'), (1, '#'), (4, '.'), (1, '#'), (2, '.'), (2, '#'), (1, '.')],
+           [(2, '.'), (1, '#'), (3, '.'), (1, '#'), (5, '.')],
+           [(3, '.'), (1, '#'), (3, '.'), (1, '#'), (4, '.')],
+           [(4, '.'), (1, '#'), (2, '.'), (1, '#'), (4, '.')],
+           [(6, '.'), (2, '#'), (4, '.')]
+         ]
+           
+
+printPictureRLE :: PictureRLE -> IO ()
+
+printPictureRLE pic = putStr $ concat [concat [ replicate n ch | (n, ch) <- line] ++ "\n" | line <- pic]
+
+-- flipV and flipH are exactly the same
+flipVRLE :: PictureRLE -> PictureRLE
+flipVRLE pic = map reverse pic
+
+flipHRLE :: PictureRLE -> PictureRLE
+flipHRLE pic = reverse pic
+
+-- 'above' is straightforward.
 
 -- Exercise 6.24
 

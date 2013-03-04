@@ -419,41 +419,155 @@ besideRLE' pic1 pic2 = compactPictureRLE $ zipWith (++) pic1 pic2
 
 -- Exercise 6.25
 
+-- Quickcheck properties
+-- They should all be the same?
 
 
 -- Exercise 6.26
 
-
+type PictureRLE2 = (Int, [(Int, Char)])
 
 -- Exercise 6.27
 
-
+-- TODO
 
 -- Exercise 6.28
 
-
+-- TODO
 
 -- Exercise 6.29
 
+type Position = (Int, Int)
 
+type Image = (Picture, Position)
+
+makeImage :: Picture -> Position -> Image
+
+makeImage pic pos = (pic, pos)
 
 -- Exercise 6.30
 
+changePosition :: Image -> Position -> Image
 
+changePosition (pic, pos) newpos = (pic, newpos)
 
 -- Exercise 6.31
 
+moveImage :: Image -> Int -> Int -> Image
 
+moveImage (pic, (x, y)) xMove yMove = (pic, (x + xMove, y + yMove))
 
 -- Exercise 6.32
 
+printImage :: Image -> IO ()
 
+printImage (pic, (x, y)) = printPicture pic 
+
+-- x and y?
 
 -- Exercise 6.33
 
+flipImageH :: Image -> Image
 
+-- TODO
+flipImageH (pic, (x, y)) = (pic, (x, y))
 
 -- Exercise 6.34
 
+-- TODO
 
+-- Exercise 6.35
+
+-- TODO
+
+-- Exercise 6.36
+
+-- TODO
+
+-- Exercise 6.37
+
+-- TODO
+
+-- Exercise 6.38
+
+-- TODO
+
+-- Exercise 6.39
+
+type Name = String
+type Price = Int
+type BillType = [(Name, Price)]
+
+formatPence :: Price -> String
+
+formatPence n = (show pounds) ++ "." ++ (pad0 pence ) 
+            where pounds = n `div` 100
+                  pence = n `mod` 100
+                  pad0 p = if p < 10 then
+                              "0" ++ show (p)
+                           else
+                              show p
+
+-- Exercise 6.40
+
+formatLine :: (Name, Price) -> String
+
+formatLine (name, price) = name ++ replicate n '.' ++ priceStr ++ "\n"
+                           where n = 30 - (length name) - (length priceStr)
+                                 priceStr = formatPence price
+
+
+-- Exercise 6.41
+
+-- Some test lines
+
+testLines :: [(Name, Price)]
+testLines = [ ("Dry Sherry, 1lt", 540),
+              ("Wet Sherry, 2lt", 1234),
+              ("Pink Lemonade, 3lt", 403)]
+
+formatLines :: [(Name, Price)] -> String
+
+formatLines lines = concat [formatLine line | line <- lines]
+
+-- Exercise 6.42
+
+makeTotal :: BillType -> Price
+
+makeTotal bill = sum [price | (_, price) <- bill]
+
+
+-- Exercise 6.43
+
+formatTotal :: Price -> String
+
+formatTotal price = "\n" ++ formatLine ("Total", price)
+
+-- Exercise 6.44
+
+centre :: Int -> String -> String
+centre w s = replicate left '.' ++ s ++ replicate right '.' 
+             where 
+             n = length s
+             left = (w - n) `div` 2
+             right = w - (n + left)
+
+formatBill :: BillType -> String
+
+formatBill bill = header ++ (formatLines bill) ++ (formatTotal $ makeTotal bill)
+                  where header = "\n\n" ++ (centre 30 "Haskell Stores") ++ "\n\n"
+
+-- Exercise 6.45
+
+
+-- Exercise 6.46
+
+
+-- Exercise 6.47
+
+
+-- Exercise 6.48
+
+
+-- Exercise 6.49
 

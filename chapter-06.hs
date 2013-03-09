@@ -11,7 +11,6 @@ snd (x, y) = y
 
 sing :: a -> [a]
 sing x = [x]
-
 -}
 
 -- Exercise 6.2
@@ -559,15 +558,264 @@ formatBill bill = header ++ (formatLines bill) ++ (formatTotal $ makeTotal bill)
 
 -- Exercise 6.45
 
+type Database = [(Barcode, Name, Price)]
+
+type Barcode = String
+
+{- Note: it's important to give the testDB its type.
+   If you just have the data without the type then
+   the type of testDB is
+   [([Char], [Char], Integer)]
+   and you'll get a type error in the "look" function.
+-}
+
+testDB :: Database
+testDB = [
+           ("1111", "Dry Sherry, 1Lt", 540),
+           ("2222", "Wet Sherry ,2Lt", 1234),
+           ("3333", "Pink Lemonade, 3Lt", 403)
+         ]
+
+look :: Database -> Barcode -> (Name, Price)
+
+look db  barcode = head $ [(name, price) | (foundBarcode, name, price) <- db, foundBarcode == barcode]
+                          ++ [("Unknown Item", 0)]
 
 -- Exercise 6.46
 
+lookup' :: Barcode -> (Name, Price)
+lookup' barcode = look testDB barcode
 
 -- Exercise 6.47
 
+type TillType = [Barcode]
+
+testTill :: TillType
+testTill = ["1111", "2222", "3333", "1111", "4444"]
+
+makeBill :: TillType -> BillType
+
+{-  I originally had this:
+
+    makeBill tillInfo = [(name, price) | barcode <- tillInfo, (name, price) <- lookup' barcode]
+
+    However, I was getting type errors on the return of lookup':
+
+        Couldn't match expected type `[t0]'
+                    with actual type `(Name, Price)'
+        In the return type of a call of lookup'
+        In the expression: lookup' barcode
+        In a stmt of a list comprehension: (name, price) <- lookup' barcode
+
+    This is because <- is expecting an array of things, not just a single thing.
+-}
+
+makeBill tillInfo = [lookup' barcode | barcode <- tillInfo]
 
 -- Exercise 6.48
 
+makeDiscount :: BillType -> Price
+
+makeDiscount bill
+    | numSherries > 1 = 100
+    | otherwise = 0
+    where numSherries = sum [ 1 | (name, _) <- bill, name == "Dry Sherry, 1Lt"]
+
+formatDiscount :: Price -> String
+formatDiscount price
+    | price > 0 = "\n" ++ formatLine ("Discount", price)
+    | otherwise = ""
+
+formatBill' :: BillType -> String
+
+formatBill' bill = header ++
+                   (formatLines bill) ++
+                   (formatDiscount $ makeDiscount bill) ++
+                   (formatTotal $ makeTotal bill)
+                   where header = "\n\n" ++ (centre 30 "Haskell Stores") ++ "\n\n"
 
 -- Exercise 6.49
+
+addBarcode :: Database -> Barcode -> (Name, Price) -> Database
+
+-- Naive version - just add
+-- addBarCode db barcode (name, price) = [(barcode, name, price)] ++ db
+
+
+addBarcode db barcode (name, price) = [(barcode, name, price)] ++
+                                      removeBarcode db barcode
+
+removeBarcode :: Database -> Barcode -> Database
+
+removeBarcode db barcode = [(bc, name, price) | (bc, name, price) <- db, bc /= barcode]
+
+
+-- Exercise 6.50
+
+
+{-  Done as a change to the formatLines function:
+    formatLines lines = concat [formatLine (name, price) | (name, price) <- lines, name /= "Unknown Item"]
+-}
+
+
+-- Exercise 6.51
+
+-- Testing with QuickCheck
+
+-- Exercise 6.52
+
+-- Project - harder
+
+
+-- Exercise 6.53
+
+data Suit = Spades | Hearts | Diamonds | Clubs
+            deriving (Show, Eq, Ord)
+
+-- Note: the orderind here is increased value           
+data Value = Two   |
+             Three |
+             Four  |
+             Five  |
+             Seven |
+             Eight |
+             Nine  |
+             Six   |
+             Ten   |
+             Jack  |
+             Queen |
+             King  |
+             Ace
+             deriving (Show, Eq, Ord)
+
+type Card = (Suit, Value)
+
+type Deck = [Card]
+
+-- Really only have 52 distinct entries in a deck. We could hard-code these
+-- or use a list comprehension to do it.
+fullDeck :: Deck            
+fullDeck = [(suit, value) | suit <- [Spades, Hearts, Diamonds, Clubs],
+                        value <- [Ace, King, Queen, Ten, Nine, Eight, Seven, Six, Five, Four, Three, Two]
+       ]
+
+-- Exercise 6.54
+
+{-  Rationale for choices in previous exercise
+
+    A data type is better than strings in this case.
+    The suits are often ordered in games like Bridge.
+    The values are a finite set and have an ordering.
+
+-}
+
+-- Exercise 6.55
+
+data Player = North | East | West | South
+              deriving (Show)
+
+-- Exercise 6.56
+
+type Trick = [(Player, Card)]
+
+-- The first item in the trick is the lead
+testTrick :: Trick
+testTrick = [(North, (Clubs, Seven)),
+             (East,  (Spades, Ten)),
+             (South, (Hearts, Two)),
+             (West,  (Clubs, Nine))]
+
+-- Exercise 6.57
+
+-- No Trumps
+-- The first suit lead is effectly the trumps
+-- Look to see who played the highest card in that suit
+-- I've redefined this in terms of the more generic winT
+
+winNT :: Trick -> Player
+            
+winNT trick = winT trumpSuit trick
+    where trumpSuit = fst $ snd $ head trick
+
+-- Exercise 6.58
+
+-- Trumps - If there were trumps played, look for the highest one
+--          Otherwise it's effectively a no-trumps game - so the trump is the first suit lead.
+winT :: Suit -> Trick -> Player
+
+winT trumpSuit trick = whoPlayed
+     where hasTrumps = length [player | (player, (suit, value)) <- trick, suit == trumpSuit] > 0
+           realTrumpSuit = if hasTrumps then trumpSuit else fst $ snd $ head trick
+           maxValue = maximum [value | (_, (suit, value)) <- trick, suit == realTrumpSuit]
+           whoPlayed = head [player | (player, (suit, value)) <- trick, suit == realTrumpSuit, value == maxValue]
+
+-- Exercise 6.59
+
+type Hand = [Card]
+
+northsHand :: Hand
+
+northsHand = [(Spades, Ace), (Spades, Two), (Hearts, King), (Hearts, Seven), (Diamonds, Three)]
+
+-- Exercise 6.60
+
+type Hands = [(Player, Hand)]
+
+allHands :: Hands
+
+allHands = [ (North, [(Spades, Ace), (Spades, Two),
+                      (Hearts, King), (Hearts, Seven),
+                      (Diamonds, Three)]),
+             (East,  [(Spades, Three),
+                      (Hearts, Jack),
+                      (Diamonds, Seven), (Diamonds, Two),
+                      (Clubs, Nine)]),
+             (South, [(Spades, King), (Spades, Queen), (Spades, Jack),
+                      (Hearts, Two),
+                      (Clubs, Ace)]),
+             (West,  [(Spades, Six),
+                      (Diamonds, Nine), (Diamonds, Five),
+                      (Clubs, King), (Clubs, Eight)])
+           ]  
+
+-- Exercise 6.61
+
+-- The following are possible tricks coming from allHands above
+
+trick1, trick2 :: Trick
+
+trick1 = [(North, (Clubs, Seven)),
+          (East,  (Spades, Ten)),
+          (South, (Hearts, Two)),
+          (West,  (Clubs, Nine))]
+
+trick2 = [(North, (Clubs, Seven)),
+          (East,  (Spades, Ten)),
+          (South, (Hearts, Two)),
+          (West,  (Clubs, Nine))]
+
+-- The following are invalid tricks          
+
+-- Not possible
+trick3 = [(North, (Clubs, Seven)),
+          (East,  (Spades, Ten)),
+          (South, (Hearts, Two)),
+          (West,  (Clubs, Nine))]
+
+-- Not legal - 
+trick4 = [(North, (Clubs, Seven)),
+          (East,  (Spades, Ten)),
+          (South, (Hearts, Two)),
+          (West,  (Clubs, Nine))]
+
+checkPlay :: Hands -> Trick -> Bool
+
+checkPlay hands trick = True
+
+
+-- Exercise 6.62
+
+
+
+-- Exercise 6.63
 

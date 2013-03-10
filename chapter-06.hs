@@ -712,7 +712,7 @@ fullDeck = [(suit, value) | suit <- [Spades, Hearts, Diamonds, Clubs],
 -- Exercise 6.55
 
 data Player = North | East | West | South
-              deriving (Show)
+              deriving (Show, Eq)
 
 -- Exercise 6.56
 
@@ -735,7 +735,7 @@ testTrick = [(North, (Clubs, Seven)),
 winNT :: Trick -> Player
             
 winNT trick = winT trumpSuit trick
-    where trumpSuit = fst $ snd $ head trick
+    where trumpSuit = suitLead trick
 
 -- Exercise 6.58
 
@@ -745,7 +745,7 @@ winT :: Suit -> Trick -> Player
 
 winT trumpSuit trick = whoPlayed
      where hasTrumps = length [player | (player, (suit, value)) <- trick, suit == trumpSuit] > 0
-           realTrumpSuit = if hasTrumps then trumpSuit else fst $ snd $ head trick
+           realTrumpSuit = if hasTrumps then trumpSuit else suitLead trick
            maxValue = maximum [value | (_, (suit, value)) <- trick, suit == realTrumpSuit]
            whoPlayed = head [player | (player, (suit, value)) <- trick, suit == realTrumpSuit, value == maxValue]
 
@@ -784,38 +784,116 @@ allHands = [ (North, [(Spades, Ace), (Spades, Two),
 
 trick1, trick2 :: Trick
 
-trick1 = [(North, (Clubs, Seven)),
-          (East,  (Spades, Ten)),
-          (South, (Hearts, Two)),
-          (West,  (Clubs, Nine))]
+trick1 = [(North, (Spades, Ace)),
+          (East,  (Spades, Three)),
+          (South, (Spades, Jack)),
+          (West,  (Spades, Six))
+         ]
 
-trick2 = [(North, (Clubs, Seven)),
-          (East,  (Spades, Ten)),
-          (South, (Hearts, Two)),
-          (West,  (Clubs, Nine))]
+trick2 = [(East,  (Clubs, Nine)),
+          (South, (Clubs, Ace)),
+          (West,  (Clubs, Eight)),
+          (North, (Diamonds, Three))  -- Not holding clubs so it's OK.
+         ]
 
 -- The following are invalid tricks          
 
 -- Not possible
-trick3 = [(North, (Clubs, Seven)),
+trick3 = [(North, (Clubs, Seven)),    -- North doesn't have 7 of Clubs
           (East,  (Spades, Ten)),
           (South, (Hearts, Two)),
-          (West,  (Clubs, Nine))]
+          (West,  (Clubs, Nine))
+         ]
 
 -- Not legal - 
-trick4 = [(North, (Clubs, Seven)),
-          (East,  (Spades, Ten)),
-          (South, (Hearts, Two)),
-          (West,  (Clubs, Nine))]
+trick4 = [(North, (Spades, Ace)),
+          (East,  (Spades, Three)),
+          (South, (Spades, Jack)),
+          (West,  (Diamonds, Five))   -- West has a spade so should lead it
+         ]
+
+checkPlayPossible :: Hands -> Trick -> Bool
+
+-- 1st part - is it possible - i.e. is the card the player played in their hand?
+
+checkPlayPossible hands trick = and [ isInHand hands player card | (player, card) <- trick]
+
+isInHand :: Hands -> Player -> Card -> Bool
+
+isInHand hands player card = length (playerHasCard hands player card) > 0
+    where playerHasCard hands player card = [p | (p, hand) <- hands, c <- hand, p == player, c == card]
+
+
+-- 2nd part - is it legal - did the player follow suit of lead?
+
+checkPlayLegal :: Hands -> Trick -> Bool
+    
+checkPlayLegal hands trick = and [followedSuitIfPossible hands trumpSuit player card | (player, card) <- trick]
+    where trumpSuit = suitLead trick
+
+followedSuitIfPossible :: Hands -> Suit -> Player -> Card -> Bool
+followedSuitIfPossible  hands suit player playedCard
+    | suit == playedSuit                      = True
+    | notHolding hands player suit == True    = True
+    | otherwise                               = False
+    where playedSuit = fst playedCard
+
+
+notHolding :: Hands -> Player -> Suit -> Bool
+notHolding hands player suit = length [s | (p, hand) <- hands, (s, v) <- hand, p == player, s == suit] == 0
+
+suitLead :: Trick -> Suit
+suitLead trick = fst $ snd $ head trick
+
 
 checkPlay :: Hands -> Trick -> Bool
-
-checkPlay hands trick = True
+checkPlay hands trick = checkPlayPossible hands trick && checkPlayLegal hands trick
 
 
 -- Exercise 6.62
 
+trick5 = [
+          (East,  (Diamonds, Two)),
+          (South, (Spades, Jack)),
+          (West,  (Spades, Six))
+          (North, (Spades, Ace)),
+         ]
 
+tricks = [trick1, trick2, trick3, trick4, trick5]
+
+data Team = NorthSouth | EastWest
+            deriving (Show, Eq)
+
+whichTeam :: Player -> Team
+whichTeam North = NorthSouth
+whichTeam South = NorthSouth
+whichTeam East  = EastWest
+whichTeam West  = EastWest
+
+-- Note: this does *no* checking that the tricks are possible or legal
+-- Also note that the number of tricks should be odd - e.g. 13 in Bridge.
+
+winnerNT :: [Trick] -> Team
+
+winnerNT tricks
+    | northSouthTricks > eastWestTricks   = NorthSouth
+    | otherwise                           = EastWest
+    where winningTeams = [whichTeam $ winNT trick | trick <- tricks]
+          northSouthTricks = length [team | team <- winningTeams, team == NorthSouth]
+          eastWestTricks = length [team | team <- winningTeams, team == EastWest]
+          
+
+
+-- This is the same function with a suit specified
+winnerT :: Suit -> [Trick] -> Team
+
+winnerT suit tricks
+    | northSouthTricks > eastWestTricks   = NorthSouth
+    | otherwise                           = EastWest
+    where winningTeams = [whichTeam $ winT suit trick | trick <- tricks]
+          northSouthTricks = length [team | team <- winningTeams, team == NorthSouth]
+          eastWestTricks = length [team | team <- winningTeams, team == EastWest]
 
 -- Exercise 6.63
+
 

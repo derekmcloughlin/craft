@@ -677,10 +677,10 @@ data Value = Two   |
              Three |
              Four  |
              Five  |
+             Six   |
              Seven |
              Eight |
              Nine  |
-             Six   |
              Ten   |
              Jack  |
              Queen |
@@ -855,8 +855,8 @@ checkPlay hands trick = checkPlayPossible hands trick && checkPlayLegal hands tr
 trick5 = [
           (East,  (Diamonds, Two)),
           (South, (Spades, Jack)),
-          (West,  (Spades, Six))
-          (North, (Spades, Ace)),
+          (West,  (Spades, Six)),
+          (North, (Spades, Ace))
          ]
 
 tricks = [trick1, trick2, trick3, trick4, trick5]
@@ -873,11 +873,11 @@ whichTeam West  = EastWest
 -- Note: this does *no* checking that the tricks are possible or legal
 -- Also note that the number of tricks should be odd - e.g. 13 in Bridge.
 
-winnerNT :: [Trick] -> Team
+winnerNT :: [Trick] -> (Team, Int)
 
 winnerNT tricks
-    | northSouthTricks > eastWestTricks   = NorthSouth
-    | otherwise                           = EastWest
+    | northSouthTricks > eastWestTricks   = (NorthSouth, northSouthTricks)
+    | otherwise                           = (EastWest, eastWestTricks)
     where winningTeams = [whichTeam $ winNT trick | trick <- tricks]
           northSouthTricks = length [team | team <- winningTeams, team == NorthSouth]
           eastWestTricks = length [team | team <- winningTeams, team == EastWest]
@@ -885,15 +885,100 @@ winnerNT tricks
 
 
 -- This is the same function with a suit specified
-winnerT :: Suit -> [Trick] -> Team
+winnerT :: Suit -> [Trick] -> (Team, Int)
 
 winnerT suit tricks
-    | northSouthTricks > eastWestTricks   = NorthSouth
-    | otherwise                           = EastWest
+    | northSouthTricks > eastWestTricks   = (NorthSouth, northSouthTricks)
+    | otherwise                           = (EastWest, eastWestTricks)
     where winningTeams = [whichTeam $ winT suit trick | trick <- tricks]
           northSouthTricks = length [team | team <- winningTeams, team == NorthSouth]
           eastWestTricks = length [team | team <- winningTeams, team == EastWest]
 
 -- Exercise 6.63
 
+-- Call it something different from 'checkPlay' above.
+-- Also, the book definition is missing the initial set of hands.
+
+checkPlays :: Hands -> [Trick] -> Bool
+
+-- Can recursively do this. After each trick played, the trick cards are removed from the
+-- "hands" and the next trick is used.
+
+checkPlays hands tricks
+    | hands  == [] = True
+    | tricks == [] = True
+    | otherwise   = checkPlay hands currentTrick &&
+                    checkPlays (removeCardsFromHands hands currentTrick) (tail tricks)
+    where currentTrick = head tricks
+
+removeCardsFromHands :: Hands -> Trick -> Hands
+removeCardsFromHands hands trick = [(player, removeCardFromHand hand card) |
+                           (player, hand) <- hands, (player2, card) <- trick, player == player2]
+
+removeCardFromHand :: Hand -> Card -> Hand
+removeCardFromHand hand card = [c | c <- hand, c /= card]
+
+-- Test hands and tricks
+
+-- This is the 1st hand that appears in Andrew Robson's book on bridge.
+
+testHands :: Hands
+
+testHands = [ (North, [
+                 (Spades, Four), (Spades, Two),
+                 (Hearts, Ace), (Hearts, Queen), (Hearts, Seven), (Hearts, Four),
+                 (Diamonds, Ace), (Diamonds, Seven), (Diamonds, Five), (Diamonds, Three), (Diamonds, Two), 
+                 (Clubs, Six), (Clubs, Three) 
+              ]),
+             (East,  [
+                 (Spades, Five), (Spades, Three),
+                 (Hearts, Eight), (Hearts, Six), (Hearts, Five),
+                 (Diamonds, King), (Diamonds, Queen), (Diamonds, Ten),
+                 (Clubs, Queen), (Clubs, Jack), (Clubs, Five), (Clubs, Four), (Clubs, Two)
+              ]),
+             (South, [
+                 (Spades, Ace), (Spades, King), (Spades, Ten), (Spades, Nine), (Spades, Seven),
+                 (Hearts, King), (Hearts, Jack), (Hearts, Ten), (Hearts, Nine),
+                 (Diamonds, Six),
+                 (Clubs, Ten), (Clubs, Eight), (Clubs, Seven)
+              ]),
+             (West,  [
+                 (Spades, Queen), (Spades, Jack), (Spades, Eight), (Spades, Six), 
+                 (Hearts, Three), (Hearts, Two),
+                 (Diamonds, Jack), (Diamonds, Nine), (Diamonds, Eight), (Diamonds, Four),
+                 (Clubs, Ace), (Clubs, King), (Clubs, Nine)
+              ])
+           ]
+
+-- These are the actual tricks played in the game = 4♥ by South
+
+testTricks = [ 
+    -- E/W
+    [(West,  (Clubs, Ace)),     (North, (Clubs, Six)),    (East,  (Clubs, Two)),    (South, (Clubs, Eight))],
+    [(West,  (Clubs, King)),    (North, (Clubs, Three)),  (East,  (Clubs, Four)),   (South, (Clubs, Ten))],
+
+    -- N/S
+    [(West,  (Diamonds, Four)), (North, (Diamonds, Ace)),  (East,  (Diamonds, Ten)),   (South, (Diamonds, Six))],
+    [(North, (Spades, Two)),    (East,  (Spades, Five)),   (South, (Spades, Ace)),     (West,  (Spades, Six))],
+    [(South, (Spades, King)),   (West,  (Spades, Eight)),  (North, (Spades, Four)),    (East,  (Spades, Three))],
+    [(South, (Spades, Seven)),  (West,  (Spades, Queen)),  (North, (Hearts, Queen)),   (East,  (Clubs, Five))],
+    [(North, (Hearts, Four)),   (East,  (Hearts, Eight)),  (South, (Hearts, Nine)),    (West,  (Hearts, Two))],
+    [(South, (Spades, Nine)),   (West,  (Spades, Jack)),   (North, (Hearts, Ace)),     (East,  (Clubs, Jack))],
+    [(North, (Hearts, Seven)),  (East,  (Hearts, Six)),    (South, (Hearts, Ten)),     (West,  (Hearts, Three))],
+
+    [(South, (Hearts, Jack)),   (West,  (Diamonds, Nine)), (North, (Diamonds, Two)),   (East,  (Hearts, Five))],
+
+    [(South, (Spades, Ten)),    (West,  (Diamonds, Eight)), (North, (Diamonds, Three)),   (East,  (Diamonds, Queen))],
+    [(South, (Hearts, King)),   (West,  (Diamonds, Jack)),  (North, (Diamonds, Five)),   (East,  (Diamonds, King))],
+
+    -- E/W
+    [(South, (Clubs, Seven)),   (West,  (Clubs, Nine)),    (North, (Diamonds, Seven)),  (East,  (Clubs, Queen))]
+    
+    ]
+
+
+ -- Really need to have a checkPlay that takes a suit
+
+-- checkSuitPlay :: Hands -> [Tricks] -> Bool
+ 
 

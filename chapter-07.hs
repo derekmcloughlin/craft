@@ -360,17 +360,86 @@ prop_sublist1 xs ys = isSubList xs xs == True -- But here we don't care about th
 prop_subsequence1 [] _ = True  -- Quickcheck might pass in an empty list for the 1st param
 prop_subsequence1 xs ys = isSubSequence xs (ys ++ xs) == True -- But here we don't care about the 2nd param
 
+
+-- Functions for the text processing exercises
+
+whitespace = ['\n', '\t', ' ']
+
+getWord :: String -> String
+
+getWord [] = []
+getWord (x:xs)
+    | elem x whitespace = []
+    | otherwise         = x : getWord xs
+
+dropWord :: String -> String
+dropWord [] = []
+dropWord (x:xs)
+    | elem x whitespace         = (x:xs)
+    | otherwise                 = dropWord xs
+
+
+dropSpace :: String -> String
+dropSpace [] = []
+dropSpace (x:xs)
+    | elem x whitespace         = dropSpace xs
+    | otherwise                 = (x:xs)
+
+type Word = String
+
+splitWords :: String -> [Word]
+splitWords st = split (dropSpace st)
+
+split :: String -> [Word]
+split [] = []
+split st = (getWord st) : split (dropSpace (dropWord st))
+
+
+type Line = [Word]
+
+getaLine :: Int -> [Word] -> Line
+getaLine len [] = []
+getaLine len (w:ws)
+    | length w <= len   = w : restOfLine
+    | otherwise         = []
+    where
+    newlen = len - (length w + 1)
+    restOfLine = getaLine newlen ws
+
 -- Exercise 7.27
 
+dropLine :: Int -> [Word] -> Line
+dropLine len [] = []
+dropLine len (w:ws)
+    | length w <= len   = restOfLine
+    | otherwise         = (w:ws)
+    where
+    newlen = len - (length w + 1)
+    restOfLine = dropLine newlen ws
 
+
+splitLines :: [Word] -> [Line]
+splitLines [] = []
+splitLines ws = getaLine lineLen ws : splitLines (dropLine lineLen ws)
+                where lineLen = 20
 
 -- Exercise 7.28
 
+joinLine :: Line -> String
 
+joinLine [] = []
+joinLine (w:ws)
+    | length ws == 0   = w
+    | otherwise        = w ++ " " ++ joinLine ws
 
 -- Exercise 7.29
 
+joinLines :: [Line] -> String
 
+joinLines [] = []
+joinLines (x:xs)
+    | length xs == 0    = joinLine x
+    | otherwise         = joinLine x ++ " " ++ joinLines xs
 
 -- Exercise 7.30
 

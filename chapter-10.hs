@@ -125,29 +125,146 @@ twiceGeneral f x = f (f x)
 
 -- Exercise 10.9
 
+iter :: Integer -> (a -> a) -> a -> a
 
+iter 0 f x = x
+iter n f x = f $ iter (n - 1) f x
 
 -- Exercise 10.10
 
+double :: Integer -> Integer
+double x = 2 * x
 
+twoN :: Integer -> Integer
+twoN n = iter n double 1
 
 -- Exercise 10.11
 
+{-
+Quickcheck for
 
+filter p xs
+
+prop_filter_1 p xs = length [1 | x <- xs, p x == False] == 0
+
+    
+-}
 
 -- Exercise 10.12
 
 
+{-
+Quickcheck for
+    f (g x) ~ x
+    g (f y) ~ y
+
+    map f xs
+
+prop_fg_1 f g xs = map g (map f xs) == map f (map g xs)
+
+-}
 
 -- Exercise 10.13
 
+sum_of_squares_map :: Integer -> Integer
+sum_of_squares_map n = sum $ map (^2) [1..n]
 
+sum_of_squares_foldr :: Integer -> Integer
+sum_of_squares_foldr n = sum $ foldr (^2) [1..n]
 
 -- Exercise 10.14
 
 
 
 -- Exercise 10.15
+
+
+
+-- Exercise 10.16
+
+
+
+-- Exercise 10.17
+
+
+
+-- Exercise 10.18
+
+
+
+-- Exercise 10.19
+
+
+
+-- Exercise 10.20
+
+
+
+-- Exercise 10.21
+
+
+
+-- Exercise 10.22
+
+
+
+-- Exercise 10.23
+
+
+
+-- Exercise 10.24
+
+
+
+-- Exercise 10.25
+
+
+
+-- Exercise 10.26
+
+
+
+-- Exercise 10.27
+
+
+
+-- Exercise 10.28
+
+
+
+-- Exercise 10.29
+
+
+
+-- Exercise 10.30
+
+
+
+-- Exercise 10.31
+
+
+
+-- Exercise 10.32
+
+
+
+-- Exercise 10.33
+
+
+
+-- Exercise 10.34
+
+
+
+-- Exercise 10.35
+
+
+
+-- Exercise 10.36
+
+
+
+-- Exercise 10.37
 
 
 

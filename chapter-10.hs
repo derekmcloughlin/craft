@@ -166,19 +166,20 @@ prop_fg_1 f g xs = map g (map f xs) == map f (map g xs)
 
 -- Exercise 10.13
 
-sum_of_squares_map :: Integer -> Integer
-sum_of_squares_map n = sum $ map (^2) [1..n]
-
-sum_of_squares_foldr :: Integer -> Integer
-sum_of_squares_foldr n = sum $ foldr (^2) [1..n]
+sum_of_squares':: Integer -> Integer
+sum_of_squares' n = foldr (+) 0 $ map (^2) [1..n]
 
 -- Exercise 10.14
 
-
+sum_sq_pos_int :: [Integer] -> Integer
+sum_sq_pos_int xs = foldr (+) 0 [x*x | x <- xs, x > 0]
 
 -- Exercise 10.15
 
-
+unzip' :: [(a, b)] -> ([a], [b])
+unzip' xs = (foldr first [] xs, foldr second [] xs)
+    where first z zs = [fst z] ++ zs
+          second z zs = [snd z] ++ zs
 
 -- Exercise 10.16
 

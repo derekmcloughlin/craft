@@ -181,20 +181,90 @@ unzip' xs = (foldr first [] xs, foldr second [] xs)
     where first z zs = [fst z] ++ zs
           second z zs = [snd z] ++ zs
 
+-- There should be a better way to do this.
+-- What we're effectively doing is reversing the list then
+-- taking the head.
+last' :: Eq a => [a] -> a
+last' xs = head $ foldr p [] xs
+
+p :: Eq a => a -> [a] -> [a]
+p x y
+    | y == [] = [x]
+    | otherwise = y
+
+{-
+init' :: [a] -> [a]
+init' xs = tail $ foldr q [] xs
+
+q :: a -> [a] -> [a]
+q x y 
+    | y == [] = [x]
+    | otherwise = y
+-}
+
 -- Exercise 10.16
 
+mystery xs = foldr (++) [] (map sing xs)
+    where sing x = [x]
+
+-- It just takes an array and returns an indentical array
 
 
 -- Exercise 10.17
 
+-- From Chapter 6:
+
+type Name = String
+type Price = Int
+
+type LineItem = (Name, Price)
+
+formatLine :: LineItem -> String
+formatLine (name, price) = name ++ replicate n '.' ++ priceStr ++ "\n"
+                           where n = 30 - (length name) - (length priceStr)
+                                 priceStr = formatPence price
+
+formatPence :: Price -> String
+formatPence n = (show pounds) ++ "." ++ (pad0 pence ) 
+            where pounds = n `div` 100
+                  pence = n `mod` 100
+                  pad0 p = if p < 10 then
+                              "0" ++ show (p)
+                           else
+                              show p
+
+formatLines :: [LineItem] -> String
+formatLines lines = concat [formatLine line | line <- lines]
+
+-- test data
+shopping :: [LineItem]
+shopping = [("Dry Sherry, 1Lt", 540),
+            ("Wet Sherry ,2Lt", 1234),
+            ("Pink Lemonade, 3Lt", 403)]
+
+
+formatList :: (a -> String) -> [a] -> String
+formatList f xs = foldr (++) [] (map f xs)
+
+formatLines' :: [LineItem] -> String
+formatLines' lines = formatList formatLine lines
 
 
 -- Exercise 10.18
 
+filterFirst :: (a -> Bool) -> [a] -> [a]
+filterFirst p (x:xs)
+    | p x == False  = xs
+    | otherwise     = x : filterFirst p xs
 
+{-
+    ghci> filterFirst isDigit "123"
+    "123*** Exception: chapter-10.hs:(256,1)-(258,42): Non-exhaustive patterns in function filterFirst
+    Add the line below to get it working.
+-}
+filterFirst p [] = []
 
 -- Exercise 10.19
-
 
 
 -- Exercise 10.20

@@ -266,10 +266,23 @@ filterFirst p [] = []
 
 -- Exercise 10.19
 
+filterLast :: (a -> Bool) -> [a] -> [a]
+filterLast p [] = []
+filterLast p xs
+    | p (last xs) == False  = init xs
+    | otherwise             = (filterLast p (init xs)) ++ [last xs]
+
+-- In terms of filterFirst
+filterLast' :: (a -> Bool) -> [a] -> [a]
+filterLast' p xs = reverse $ filterFirst p $ reverse xs
 
 -- Exercise 10.20
 
+switchMap :: (a -> b) -> (a -> b) -> [a] -> [b]
+switchMap _ _ [] = []
+switchMap f g (x:xs) = f x : switchMap g f xs
 
+-- TODO: Re-implement using foldr?
 
 -- Exercise 10.21
 

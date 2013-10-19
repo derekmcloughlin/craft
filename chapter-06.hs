@@ -669,10 +669,10 @@ removeBarcode db barcode = [(bc, name, price) | (bc, name, price) <- db, bc /= b
 
 -- Exercise 6.53
 
-data Suit = Spades | Hearts | Diamonds | Clubs
-            deriving (Show, Eq, Ord)
+data Suit = Clubs | Diamonds | Hearts | Spades
+            deriving (Show, Eq, Ord, Enum)
 
--- Note: the orderind here is increased value           
+-- Note: the ordering here is increased value           
 data Value = Two   |
              Three |
              Four  |
@@ -686,7 +686,7 @@ data Value = Two   |
              Queen |
              King  |
              Ace
-             deriving (Show, Eq, Ord)
+             deriving (Show, Eq, Ord, Enum)
 
 type Card = (Suit, Value)
 
@@ -695,9 +695,7 @@ type Deck = [Card]
 -- Really only have 52 distinct entries in a deck. We could hard-code these
 -- or use a list comprehension to do it.
 fullDeck :: Deck            
-fullDeck = [(suit, value) | suit <- [Spades, Hearts, Diamonds, Clubs],
-                        value <- [Ace, King, Queen, Ten, Nine, Eight, Seven, Six, Five, Four, Three, Two]
-       ]
+fullDeck = [(suit, value) | suit <- [Clubs .. Spades], value <- [Two .. Ace]]
 
 -- Exercise 6.54
 

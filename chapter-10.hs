@@ -286,6 +286,10 @@ switchMap f g (x:xs) = f x : switchMap g f xs
 
 -- Exercise 10.21
 
+split :: [a] -> ([a], [a])
+split xs =  (foldr p [] xs, foldr q [] xs)
+    where p z zs = [z] ++ [head zs]
+          q y ys = [y]  -- ++ [head (tail ys)]
 
 
 -- Exercise 10.22
